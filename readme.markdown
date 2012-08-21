@@ -19,3 +19,10 @@ To Do
 
 * Finish modifying layout of the symbols keys.
 * Try the alternative method of accessing keys that are hidden by the right side of the screen.
+
+Building
+=====
+
+Follow the instructions here for existing projects:
+
+https://developer.android.com/tools/projects/projects-cmdline.html
