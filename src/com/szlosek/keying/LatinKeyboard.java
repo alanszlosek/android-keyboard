@@ -29,12 +29,11 @@ public class LatinKeyboard extends Keyboard {
 	private Key mEnterKey;
 
 	public LatinKeyboard(Context context, int xmlLayoutResId) {
-	super(context, xmlLayoutResId);
+		super(context, xmlLayoutResId);
 	}
 
-	public LatinKeyboard(Context context, int layoutTemplateResId, 
-	CharSequence characters, int columns, int horizontalPadding) {
-	super(context, layoutTemplateResId, characters, columns, horizontalPadding);
+	public LatinKeyboard(Context context, int layoutTemplateResId, CharSequence characters, int columns, int horizontalPadding) {
+		super(context, layoutTemplateResId, characters, columns, horizontalPadding);
 	}
 
 	@Override
@@ -43,13 +42,13 @@ public class LatinKeyboard extends Keyboard {
 		if (key.codes[0] == 10) {
 			mEnterKey = key;
 		}
-	return key;
+		return key;
 	}
 
-		/**
-		* This looks at the ime options given by the current editor, to set the
-		* appropriate label on the keyboard's enter key (if it has one).
-		*/
+	/**
+	* This looks at the ime options given by the current editor, to set the
+	* appropriate label on the keyboard's enter key (if it has one).
+	*/
 	void setImeOptions(Resources res, int options) {
 		if (mEnterKey == null) {
 			return;

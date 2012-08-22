@@ -56,12 +56,12 @@ public class LatinKeyboardView extends KeyboardView {
 
 	@Override
 	public void swipeLeft() {
-		getOnKeyboardActionListener().handleBackspace();
+		((Keying) getOnKeyboardActionListener()).handleBackspace();
 	}
 
 	@Override
 	public void swipeDown() {
-		getOnKeyboardActionListener().handleClose();
+		((Keying) getOnKeyboardActionListener()).handleClose();
 	}
 
 	@Override
