@@ -19,3 +19,4 @@ To Do
 
 * Finish modifying layout of the symbols keys.
 * Try the alternative method of accessing keys that are hidden by the right side of the screen.
+* The suggestions portion of the UI needs some major love
