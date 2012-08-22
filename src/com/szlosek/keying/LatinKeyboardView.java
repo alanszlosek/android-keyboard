@@ -24,23 +24,48 @@ import android.util.AttributeSet;
 
 public class LatinKeyboardView extends KeyboardView {
 
-    static final int KEYCODE_OPTIONS = -100;
+	static final int KEYCODE_OPTIONS = -100;
 
-    public LatinKeyboardView(Context context, AttributeSet attrs) {
-        super(context, attrs);
-    }
+	public LatinKeyboardView(Context context, AttributeSet attrs) {
+		super(context, attrs);
+	}
 
-    public LatinKeyboardView(Context context, AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
-    }
+	public LatinKeyboardView(Context context, AttributeSet attrs, int defStyle) {
+		super(context, attrs, defStyle);
+	}
 
-    @Override
-    protected boolean onLongPress(Key key) {
-        if (key.codes[0] == Keyboard.KEYCODE_CANCEL) {
-            getOnKeyboardActionListener().onKey(KEYCODE_OPTIONS, null);
-            return true;
-        } else {
-            return super.onLongPress(key);
-        }
-    }
+	@Override
+	protected boolean onLongPress(Key key) {
+		// Obey alternative keys from the XML
+		if (key.codes[0] == Keyboard.KEYCODE_CANCEL) {
+			getOnKeyboardActionListener().onKey(KEYCODE_OPTIONS, null);
+			return true;
+		} else {
+			return super.onLongPress(key);
+		}
+	}
+
+	@Override
+	public void swipeRight() {
+		/*
+		if (mCompletionOn) {
+			pickDefaultCandidate();
+		}
+		*/
+	}
+
+	@Override
+	public void swipeLeft() {
+		getOnKeyboardActionListener().handleBackspace();
+	}
+
+	@Override
+	public void swipeDown() {
+		getOnKeyboardActionListener().handleClose();
+	}
+
+	@Override
+	public void swipeUp() {
+	}
+
 }
