@@ -19,7 +19,14 @@ To Do
 
 * Finish modifying layout of the symbols keys.
 * Try the alternative method of accessing keys that are hidden by the right side of the screen.
-* The suggestions portion of the UI needs some major love
+* The suggestions portion of the UI needs some major love. Copy style from built-in android keyboard
+* Use long-press codes as a tree of possible predictions ... to maximize effectiveness of condensed keys
+
+Bugs
+====
+
+* Suggestions should backtrack to the previous word characters (regex) and them use that for suggestions, not the letter you just typed after backspacing.
+* Backspace should operate from current cursor position.
 
 Building
 =====

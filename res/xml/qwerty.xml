@@ -22,16 +22,13 @@
 	android:horizontalGap="0px" android:verticalGap="0px" android:keyHeight="@dimen/key_height">
 
 	<Row>
-<!--
-		<Key android:codes="113" android:keyLabel="q" android:keyEdgeFlags="left"/>
--->
 		<Key android:codes="119" android:keyLabel="w" android:popupCharacters="q" android:keyEdgeFlags="left" />
-		<Key android:codes="101" android:keyLabel="e" android:keyEdgeFlags="left" />
+		<Key android:codes="101" android:keyLabel="e" />
 		<Key android:codes="114" android:keyLabel="r"/>
 		<Key android:codes="116" android:keyLabel="t"/>
 		<Key android:codes="121" android:keyLabel="y"/>
 		<Key android:codes="117" android:keyLabel="u" android:popupCharacters="o" />
-		<Key android:codes="106" android:keyLabel="i" android:popupCharacters="p" />
+		<Key android:codes="105" android:keyLabel="i" android:popupCharacters="p" />
 <!--
 		<Key android:codes="-5" android:keyIcon="@drawable/sym_keyboard_delete" android:isRepeatable="true"/>
 -->
