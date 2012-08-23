@@ -21,6 +21,10 @@ import android.inputmethodservice.Keyboard;
 import android.inputmethodservice.KeyboardView;
 import android.inputmethodservice.Keyboard.Key;
 import android.util.AttributeSet;
+import android.util.Log;
+
+import java.lang.Character;
+import java.lang.CharSequence;
 
 public class LatinKeyboardView extends KeyboardView {
 
@@ -34,19 +38,36 @@ public class LatinKeyboardView extends KeyboardView {
 		super(context, attrs, defStyle);
 	}
 
+	/*
+	@Override
+	public void setOnKeyboardActionListener(KeyboardView.OnKeyboardActionListener listener) {
+		super(listener);
+	}
+	*/
+
 	@Override
 	protected boolean onLongPress(Key key) {
+		CharSequence cs;
+		Log.d("Keying", "onLongPress");
 		// Obey alternative keys from the XML
 		if (key.codes[0] == Keyboard.KEYCODE_CANCEL) {
 			getOnKeyboardActionListener().onKey(KEYCODE_OPTIONS, null);
 			return true;
 		} else {
-			return super.onLongPress(key);
+			if (key.popupCharacters != null && key.popupCharacters.length() > 0) {
+				getOnKeyboardActionListener().onKey(
+					Character.codePointAt(key.popupCharacters, 0), null);
+				return true;
+			} else {
+				return super.onLongPress(key);
+			}
 		}
 	}
 
+
 	@Override
 	public void swipeRight() {
+		Log.d("Keying", "swipeRight2");
 		/*
 		if (mCompletionOn) {
 			pickDefaultCandidate();
@@ -54,18 +75,23 @@ public class LatinKeyboardView extends KeyboardView {
 		*/
 	}
 
+/*
 	@Override
 	public void swipeLeft() {
+		Log.d("Keying", "swipeLeft2");
 		((Keying) getOnKeyboardActionListener()).handleBackspace();
 	}
 
 	@Override
 	public void swipeDown() {
+		Log.d("Keying", "swipeDown2");
 		((Keying) getOnKeyboardActionListener()).handleClose();
 	}
 
 	@Override
 	public void swipeUp() {
+		Log.d("Keying", "swipeUp2");
 	}
+*/
 
 }

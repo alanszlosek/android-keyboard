@@ -22,41 +22,55 @@
 	android:horizontalGap="0px" android:verticalGap="0px" android:keyHeight="@dimen/key_height">
 
 	<Row>
+<!--
 		<Key android:codes="114" android:keyLabel="r" android:keyEdgeFlags="left" />
-		<Key android:codes="116" android:keyLabel="t"/>
+-->
+		<Key android:codes="116" android:keyLabel="t" android:keyEdgeFlags="left" />
 		<Key android:codes="121" android:keyLabel="y"/>
 		<Key android:codes="117" android:keyLabel="u" />
 		<Key android:codes="105" android:keyLabel="i" />
 		<Key android:codes="111" android:keyLabel="o" />
 		<Key android:codes="112" android:keyLabel="p" />
+		<Key android:codes="-5" android:keyIcon="@drawable/sym_keyboard_delete"
+			android:keyEdgeFlags="right" android:isRepeatable="true"/>
 	</Row>
 	<Row>
+<!--
 		<Key android:codes="102" android:keyLabel="f" android:keyEdgeFlags="left" />
-		<Key android:codes="103" android:keyLabel="g"/>
+-->
+		<Key android:codes="103" android:keyLabel="g" android:keyEdgeFlags="left" />
 		<Key android:codes="104" android:keyLabel="h"/>
 		<Key android:codes="106" android:keyLabel="j"/>
 		<Key android:codes="107" android:keyLabel="k" />
 		<Key android:codes="108" android:keyLabel="l" />
 		<Key android:codes="59" android:keyLabel=";" android:popupCharacters=":" />
+		<Key android:codes="59" android:keyLabel="\'" android:popupCharacters=":" />
 	</Row>
 	<Row>
 		<Key android:codes="118" android:keyLabel="v" android:keyEdgeFlags="left" />
 		<Key android:codes="98" android:keyLabel="b"/>
 		<Key android:codes="110" android:keyLabel="n"/>
 		<Key android:codes="109" android:keyLabel="m"/>
-		<Key android:codes="44" android:keyLabel=","/>
-		<Key android:codes="45" android:keyLabel="."/>
+		<!--
+		figured hiding period under comma is better than showing both,
+		that way we can show ? and / 
+		-->
+		<Key android:codes="44" android:keyLabel="," android:popupCharacters="." />
+		<Key android:codes="44" android:keyLabel="." android:popupCharacters="." />
+		<Key android:codes="47" android:keyLabel="/" android:popupCharacters="\?" />
+<!--
 		<Key android:codes="-5" android:keyIcon="@drawable/sym_keyboard_delete"
 			android:keyEdgeFlags="right" android:isRepeatable="true"/>
+-->
 	</Row>
 
 	<Row android:rowEdgeFlags="bottom">
 		<Key android:codes="-1" android:keyIcon="@drawable/sym_keyboard_shift"
 			android:isModifier="true" android:isSticky="true" android:keyEdgeFlags="left"/>
 		<Key android:codes="-2" android:keyLabel="#" />
+		<Key android:codes="-10" android:keyLabel="&gt;&gt;" />
 		<Key android:codes="32" android:keyIcon="@drawable/sym_keyboard_space"
 			android:keyWidth="28%p" android:isRepeatable="true"/>
-		<Key android:codes="47" android:keyLabel="/" />
 <!--
 		<Key android:codes="46,44" android:keyLabel=". ," android:keyWidth="25%p"/>
 -->
