@@ -14,6 +14,8 @@ To do this, I've doubled up on some letters. For the top row, the letters "o" an
 
 Another approach may be to initially hide the 3 or so right-most keys on all rows. They'd be off the right side of the screen and the view could be made to shift to the right by pressing a button near the shift key.
 
+Just for the record: Also thought of having 2 spacebars, normal that obeys most logical completion, and another that ignores and leaves word as typed.
+
 To Do
 ====
 
