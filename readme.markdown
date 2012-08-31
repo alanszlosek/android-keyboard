@@ -3,7 +3,7 @@ Why
 
 I'm thrifty, with an LG Optimus V in my hand. It's got a 3.2" screen which makes typing on the standard Android keyboard a frustrating process. So I'm modifying the SoftKeyboard sample project, and experimenting with ways to arrange the keys differently such that they can be made larger.
 
-View screenshot.png for a preview.
+View screenshot.png for a preview. Though, it's slightly out of date from what I describe below.
 
 Ideas
 ====
