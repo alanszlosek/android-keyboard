@@ -45,10 +45,17 @@ public class LatinKeyboardView extends KeyboardView {
 	}
 	*/
 
+	/*
+	Now that I figured out how to bypass the "double-tap does letter swap" (it was using android:codes),
+	I can bypass this, and do my own long press detection
+	*/
 	@Override
 	protected boolean onLongPress(Key key) {
-		CharSequence cs;
 		Log.d("Keying", "onLongPress");
+		// Do nothing
+		return super.onLongPress(key);
+/*
+		CharSequence cs;
 		// Obey alternative keys from the XML
 		if (key.codes[0] == Keyboard.KEYCODE_CANCEL) {
 			getOnKeyboardActionListener().onKey(KEYCODE_OPTIONS, null);
@@ -62,6 +69,7 @@ public class LatinKeyboardView extends KeyboardView {
 				return super.onLongPress(key);
 			}
 		}
+*/
 	}
 
 

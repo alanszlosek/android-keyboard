@@ -42,6 +42,7 @@ import java.util.List;
 public class Keying extends InputMethodService implements KeyboardView.OnKeyboardActionListener {
 	// Starting over
 	private long mKeyDownStart = 0;
+	private String mappings = new String("qwuiopaskl");
 
 
 
@@ -492,18 +493,18 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 	* Helper to send a character to the editor as raw key events.
 	*/
 	private void sendKey(int keyCode) {
-		Log.d("Keying", "sendKey");
+		Log.d("Keying", String.format("sendKey %d", keyCode));
 		switch (keyCode) {
 			case '\n':
-			keyDownUp(KeyEvent.KEYCODE_ENTER);
-			break;
-		default:
-			if (keyCode >= '0' && keyCode <= '9') {
-				keyDownUp(keyCode - '0' + KeyEvent.KEYCODE_0);
-			} else {
-				getCurrentInputConnection().commitText(String.valueOf((char) keyCode), 1);
-			}
-			break;
+				keyDownUp(KeyEvent.KEYCODE_ENTER);
+				break;
+			default:
+				if (keyCode >= '0' && keyCode <= '9') {
+					keyDownUp(keyCode - '0' + KeyEvent.KEYCODE_0);
+				} else {
+					getCurrentInputConnection().commitText(String.valueOf((char) keyCode), 1);
+				}
+				break;
 		}
 	}
 
@@ -575,7 +576,8 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 		}
 	}
 
-	private void handleCharacter(int primaryCode, int[] keyCodes) {
+	private void handleCharacter(int primaryCode) {
+		Log.d("Keying", String.format("handleCharacter %c", (char)primaryCode));
 		if (isInputViewShown()) {
 			if (mInputView.isShifted()) {
 				primaryCode = Character.toUpperCase(primaryCode);
@@ -640,8 +642,29 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 	// OnKeyboardActionListener callbacks
 
 
+	// We're going to ignore these callbacks so we can trigger from onRelease
+	// But this gets called repeatedly for long presses like delete
 	public void onKey(int primaryCode, int[] keyCodes) {
-		Log.d("Keying", "onKey");
+		Log.d("Keying", String.format("onKey %c %d", (char)primaryCode, primaryCode));
+		if (primaryCode == Keyboard.KEYCODE_DELETE) {
+			handleBackspace();
+
+		// Show a menu or somethin'
+		} else if (primaryCode == Keyboard.KEYCODE_MODE_CHANGE && mInputView != null) {
+			Keyboard current = mInputView.getKeyboard();
+			if (current == mSymbolsKeyboard || current == mSymbolsShiftedKeyboard) {
+				current = mQwertyKeyboard;
+			} else {
+				current = mSymbolsKeyboard;
+			}
+			mInputView.setKeyboard(current);
+			if (current == mSymbolsKeyboard) {
+				current.setShifted(false);
+			}
+		}
+		return;
+// Original:
+/*
 		if (isWordSeparator(primaryCode)) {
 			// Handle separator
 			if (mComposing.length() > 0) {
@@ -672,6 +695,8 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 		} else {
 			handleCharacter(primaryCode, keyCodes);
 		}
+*/
+
 	}
 
 	public void onText(CharSequence text) {
@@ -689,15 +714,60 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 	// Use this to detect long presses ourselves?
 	public void onPress(int primaryCode) {
 		Log.d("Keying", "onPress");
-		
-		// Determine if we care about this key
-		mKeyDownStart = System.currentTimeMillis();
+
+/*
+		if (primaryCode == Keyboard.KEYCODE_DELETE) {
+			handleBackspace();
+		} else 
+*/
+		if (primaryCode == Keyboard.KEYCODE_SHIFT) {
+			handleShift();
+		} else if (primaryCode == Keyboard.KEYCODE_CANCEL) {
+			handleClose();
+		} else {
+			// Determine if we care about this key
+			mKeyDownStart = System.currentTimeMillis();
+		}
 
 	}
 
 	public void onRelease(int primaryCode) {
-		// We only care about long-presses on certain keys
-		Log.d("Keying", "onRelease");
+		long diff;
+		int i;
+
+		// We only care about long-presses on certain keys, and long-press is short: 200ms
+		if (isWordSeparator(primaryCode)) {
+			// Handle separator
+			if (mComposing.length() > 0) {
+				commitTyped(getCurrentInputConnection());
+			}
+			sendKey(primaryCode);
+			updateShiftKeyState(getCurrentInputEditorInfo());
+		} else if (
+			primaryCode == Keyboard.KEYCODE_DELETE
+			||
+			primaryCode == Keyboard.KEYCODE_SHIFT
+			||
+			primaryCode == Keyboard.KEYCODE_CANCEL
+			||
+			primaryCode == Keyboard.KEYCODE_MODE_CHANGE
+		) {
+			Log.d("Keying", String.format("onRelease code %d", primaryCode));
+		} else {
+			diff = System.currentTimeMillis() - mKeyDownStart;
+			Log.d("Keying", String.format("onRelease after %d ms", diff));
+			if (diff > 200) {
+				// Do re-mappings
+				i = mappings.indexOf(primaryCode);
+				if (i == -1) {
+					handleCharacter( primaryCode );
+				} else {
+					handleCharacter( mappings.codePointAt( i+1 ) );
+				}
+			} else {
+				handleCharacter(primaryCode);
+			}
+		}
 	}
 	
 	
