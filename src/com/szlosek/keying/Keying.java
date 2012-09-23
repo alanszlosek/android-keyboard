@@ -737,6 +737,7 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 
 		// We only care about long-presses on certain keys, and long-press is short: 200ms
 		if (isWordSeparator(primaryCode)) {
+			Log.d("Keying", "onRelease,isWordSeparator");
 			// Handle separator
 			if (mComposing.length() > 0) {
 				commitTyped(getCurrentInputConnection());

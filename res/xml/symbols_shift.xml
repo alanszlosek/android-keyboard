@@ -18,7 +18,7 @@
 */
 -->
 
-<Keyboard xmlns:android="http://schemas.android.com/apk/res/android" android:keyWidth="14%p"
+<Keyboard xmlns:android="http://schemas.android.com/apk/res/android" android:keyWidth="14.28%p"
 	android:horizontalGap="0px" android:verticalGap="0px" android:keyHeight="@dimen/key_height">
 
 	<Row>
@@ -40,9 +40,9 @@
 			android:isModifier="true" android:isSticky="true" android:keyEdgeFlags="left"/>
 		<Key android:codes="-2" android:keyLabel="A" />
 		<Key android:codes="32" android:keyIcon="@drawable/sym_keyboard_space"
-			android:keyWidth="42%p" android:isRepeatable="true"/>
+			android:keyWidth="42.84%p" android:isRepeatable="true"/>
 		<Key android:codes="10" android:keyIcon="@drawable/sym_keyboard_return" 
-			android:keyWidth="28%p" android:keyEdgeFlags="right"/>
+			android:keyWidth="28.56%p" android:keyEdgeFlags="right"/>
 	</Row>
 
 
