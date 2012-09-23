@@ -42,7 +42,7 @@ import java.util.List;
 public class Keying extends InputMethodService implements KeyboardView.OnKeyboardActionListener {
 	// Starting over
 	private long mKeyDownStart = 0;
-	private String mappings = new String("qwuiopaskl");
+	private String mappings = new String("qwuiopasklzx");
 
 
 
@@ -66,7 +66,7 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 	private boolean mPredictionOn;
 	private boolean mCompletionOn;
 	private int mLastDisplayWidth;
-	private boolean mCapsLock;
+	private boolean mShifted;
 	private long mLastShiftTime;
 	private long mMetaState;
 
@@ -465,7 +465,8 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 			if (ei != null && ei.inputType != EditorInfo.TYPE_NULL) {
 				caps = getCurrentInputConnection().getCursorCapsMode(attr.inputType);
 			}
-			mInputView.setShifted(mCapsLock || caps != 0);
+			mShifted = (caps != 0);
+			mInputView.setShifted(mShifted);
 		}
 	}
 
@@ -556,15 +557,19 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 
 	// pretty certain this logic is failing somewhere ... got stuck in caps mode
 	private void handleShift() {
+		Log.d("Keying", "handleShift");
 		if (mInputView == null) {
 			return;
 		}
 
 		Keyboard currentKeyboard = mInputView.getKeyboard();
 		if (mQwertyKeyboard == currentKeyboard) {
+			Log.d("Keying", "handleShift,qwerty");
 			// Alphabet keyboard
 			checkToggleCapsLock();
-			mInputView.setShifted(mCapsLock || !mInputView.isShifted());
+			// Don't defer to InputView setting ... override it. Want to be able to start out first letter lowercase
+			//mInputView.setShifted(mShifted || mInputView.isShifted());
+			mInputView.setShifted(mShifted);
 		} else if (currentKeyboard == mSymbolsKeyboard) {
 			mSymbolsKeyboard.setShifted(true);
 			mInputView.setKeyboard(mSymbolsShiftedKeyboard);
@@ -600,13 +605,17 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 	}
 
 	private void checkToggleCapsLock() {
+		mShifted = !mShifted;
+		Log.d("Keying", "checkToggleCapsLock,toggling");
+		/*
 		long now = System.currentTimeMillis();
 		if (mLastShiftTime + 800 > now) {
-			mCapsLock = !mCapsLock;
+			Log.d("Keying", "checkToggleCapsLock,toggling");
 			mLastShiftTime = 0;
 		} else {
 			mLastShiftTime = now;
 		}
+		*/
 	}
 
 	private String getWordSeparators() {
