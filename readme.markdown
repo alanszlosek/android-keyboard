@@ -42,3 +42,10 @@ Building
 Follow the instructions here for existing projects:
 
 https://developer.android.com/tools/projects/projects-cmdline.html
+
+Notes
+====
+
+Example project had some quirkiness. Namely regarding the caps lock key. Or maybe I introduced those bugs. Either way:
+
+Thinking that when the keyboard first shows, it should check the shift key state for the current input control (view?). I have an internal boolean for isShifted, which I should set to the cursor shift key state.

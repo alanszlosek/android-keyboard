@@ -37,6 +37,10 @@ public class LatinKeyboardView extends KeyboardView {
 	public LatinKeyboardView(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
 	}
+	
+	public void onDetachedFromWindow() {
+		Log.d("Keying", "LatinKeyboardView.onDetachedFromWindow");
+	}
 
 	/*
 	@Override

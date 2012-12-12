@@ -44,15 +44,12 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 	private long mKeyDownStart = 0;
 	private String mappings = new String("qwuiopasklzx");
 
-
-
 	static final boolean DEBUG = false;
-    
 	/**
 	* This boolean indicates the optional example code for performing
 	* processing of hard keys in addition to regular text generation
 	* from on-screen interaction.  It would be used for input methods that
-	* perform language translations (such as converting text entered on 
+	* perform language translations (such as converting text entered on
 	* a QWERTY keyboard to Chinese), but may not be used for input methods
 	* that are primarily intended to be used for on-screen text entry.
 	*/
@@ -65,7 +62,6 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 	private StringBuilder mComposing = new StringBuilder();
 	private boolean mPredictionOn;
 	private boolean mCompletionOn;
-	private int mLastDisplayWidth;
 	private boolean mShifted;
 	private long mLastShiftTime;
 	private long mMetaState;
@@ -85,25 +81,17 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 	*/
 	@Override
 	public void onCreate() {
-		Log.d("Keying", "onCreate");
 		super.onCreate();
+		debug("onCreate");
 		mWordSeparators = getResources().getString(R.string.word_separators);
 	}
-    
-	/**
-	* This is the point where you can do all of your UI initialization.  It
-	* is called after creation and any configuration change.
-	*/
+
+	// For UI init.Called after the service is first created and after a configuration change happens
 	@Override
 	public void onInitializeInterface() {
-		if (mQwertyKeyboard != null) {
-			// Configuration changes can happen after the keyboard gets recreated,
-			// so we need to be able to re-build the keyboards if the available
-			// space has changed.
-			int displayWidth = getMaxWidth();
-			if (displayWidth == mLastDisplayWidth) return;
-			mLastDisplayWidth = displayWidth;
-		}
+		debug("onInitializeInterface");
+		
+		// Re-create keyboards to reflect (possibly new) display width
 		mQwertyKeyboard = new LatinKeyboard(this, R.xml.qwerty);
 		mSymbolsKeyboard = new LatinKeyboard(this, R.xml.symbols);
 		mSymbolsShiftedKeyboard = new LatinKeyboard(this, R.xml.symbols_shift);
@@ -116,7 +104,7 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 		return false; //true;
 	}
 */
-    
+
 	/**
 	* Called by the framework when your view for creating input needs to
 	* be generated.  This will be called the first time your input method
@@ -125,7 +113,7 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 	*/
 	@Override
 	public View onCreateInputView() {
-		Log.d("Keying", "onCreateInputView");
+		debug("onCreateInputView");
 		mInputView = (KeyboardView) getLayoutInflater().inflate(R.layout.input, null);
 		mInputView.setOnKeyboardActionListener(this);
 		mInputView.setKeyboard(mQwertyKeyboard);
@@ -138,9 +126,15 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 	*/
 	@Override
 	public View onCreateCandidatesView() {
+		debug("onCreateCandidatesView");
 		mCandidateView = new CandidateView(this);
 		mCandidateView.setService(this);
 		return mCandidateView;
+	}
+	
+	@Override
+	public void onBindInput() {
+		debug("onBindInput");
 	}
 
 	/**
@@ -151,11 +145,10 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 	*/
 	@Override public void onStartInput(EditorInfo attribute, boolean restarting) {
 		super.onStartInput(attribute, restarting);
+		debug("onStartInput");
 
 		// Reset our state.  We want to do this even if restarting, because
 		// the underlying state of the text editor could have changed in any way.
-		mComposing.setLength(0);
-		updateCandidates();
 
 		if (!restarting) {
 			// Clear shift states.
@@ -193,7 +186,7 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 
 				// We now look for a few special variations of text that will
 				// modify our behavior.
-				int variation = attribute.inputType &  EditorInfo.TYPE_MASK_VARIATION;
+				int variation = attribute.inputType & EditorInfo.TYPE_MASK_VARIATION;
 				if (variation == EditorInfo.TYPE_TEXT_VARIATION_PASSWORD ||
 					variation == EditorInfo.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD) {
 					// Do not display predictions / what the user is typing
@@ -201,6 +194,7 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 					mPredictionOn = false;
 				}
 
+				// Would love to show a slightly modified keyboard for email address, with @ in place of ,
 				if (variation == EditorInfo.TYPE_TEXT_VARIATION_EMAIL_ADDRESS 
 					|| variation == EditorInfo.TYPE_TEXT_VARIATION_URI
 					|| variation == EditorInfo.TYPE_TEXT_VARIATION_FILTER) {
@@ -237,36 +231,17 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 		mCurKeyboard.setImeOptions(getResources(), attribute.imeOptions);
 	}
 
-	/**
-	* This is called when the user is done editing a field.  We can use
-	* this to reset our state.
-	*/
-	@Override
-	public void onFinishInput() {
-		super.onFinishInput();
-
-		// Clear current composing text and candidates.
-		mComposing.setLength(0);
-		updateCandidates();
-
-		// We only hide the candidates window when finishing input on
-		// a particular editor, to avoid popping the underlying application
-		// up and down if the user is entering text into the bottom of
-		// its window.
-		setCandidatesViewShown(false);
-
-		mCurKeyboard = mQwertyKeyboard;
-		if (mInputView != null) {
-			mInputView.closing();
-		}
-	}
-
 	@Override
 	public void onStartInputView(EditorInfo attribute, boolean restarting) {
 		super.onStartInputView(attribute, restarting);
+		debug("onStartInputView");
 		// Apply the selected keyboard to the input view.
 		mInputView.setKeyboard(mCurKeyboard);
-		mInputView.closing();
+		//mInputView.closing();
+		
+		// Reset composing buffer
+		mComposing.setLength(0);
+		updateCandidates();
 	}
 
 	/**
@@ -276,7 +251,12 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 	public void onUpdateSelection(int oldSelStart, int oldSelEnd, int newSelStart, int newSelEnd,
 		int candidatesStart, int candidatesEnd) {
 		super.onUpdateSelection(oldSelStart, oldSelEnd, newSelStart, newSelEnd, candidatesStart, candidatesEnd);
-
+		debug(String.format("onUpdateSelection: %d %d %d %d %d %d", oldSelStart, oldSelEnd, newSelStart, newSelEnd, candidatesStart, candidatesEnd));
+		
+		// Set composing text from here
+		
+		// If we move the cursor away from completion area, what to do?
+		
 		// If the current selection in the text view changes, we should
 		// clear whatever candidate text we have.
 		if (mComposing.length() > 0 && (newSelStart != candidatesEnd || newSelEnd != candidatesEnd)) {
@@ -287,6 +267,7 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 				ic.finishComposingText();
 			}
 		}
+		
 	}
 
 	/**
@@ -297,6 +278,7 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 	*/
 	@Override
 	public void onDisplayCompletions(CompletionInfo[] completions) {
+		debug("onDisplayCompletions");
 		if (mCompletionOn) {
 			mCompletions = completions;
 			if (completions == null) {
@@ -314,6 +296,52 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 			setSuggestions(stringList, true, true);
 		}
 	}
+	
+		/**
+	* This is called when the user is done editing a field.  We can use
+	* this to reset our state.
+	*/
+	@Override
+	public void onFinishInput() {
+		super.onFinishInput();
+		debug("onFinishInput");
+
+		// Clear current composing text and candidates.
+		mComposing.setLength(0);
+		
+		// why not just clear them?
+		updateCandidates();
+
+		// We only hide the candidates window when finishing input on
+		// a particular editor, to avoid popping the underlying application
+		// up and down if the user is entering text into the bottom of
+		// its window.
+		setCandidatesViewShown(false);
+
+		mCurKeyboard = mQwertyKeyboard;
+		// necessary?
+		/*
+		if (mInputView != null) {
+			mInputView.closing();
+		}
+		*/
+	}
+	
+	@Override
+	public void onFinishCandidatesView(boolean finishingInput) {
+		super.onFinishCandidatesView(finishingInput);
+		debug("onFinishCandidatesView");
+	}
+	
+	@Override
+	public void onUnbindInput() {
+		debug("onUnbindInput");
+	}
+	
+	@Override
+	public void onDestroy() {
+		debug("onDestroy");
+	}
 
 
 	/**
@@ -322,7 +350,7 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 	* PROCESS_HARD_KEYS option.
 	*/
 	private boolean translateKeyDown(int keyCode, KeyEvent event) {
-		Log.d("Keying", "translateKeyDown");
+		debug("translateKeyDown");
 		mMetaState = MetaKeyKeyListener.handleKeyDown(mMetaState, keyCode, event);
 		int c = event.getUnicodeChar(MetaKeyKeyListener.getMetaState(mMetaState));
 		mMetaState = MetaKeyKeyListener.adjustMetaAfterKeypress(mMetaState);
@@ -360,7 +388,7 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 	*/
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		Log.d("Keying", "onKeyDown");
+		debug("onKeyDown");
 		switch (keyCode) {
 			case KeyEvent.KEYCODE_BACK:
 				// The InputMethodService already takes care of the back
@@ -429,7 +457,7 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 	@Override
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
 
-		Log.d("Keying", "onKeyUp");
+		debug("onKeyUp");
 		// If we want to do transformations on text being entered with a hard
 		// keyboard, we need to process the up events to update the meta key
 		// state we are tracking.
@@ -445,9 +473,10 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 	/**
 	* Helper function to commit any text being composed in to the editor.
 	*/
-	private void commitTyped(InputConnection inputConnection) {
+	private void commitTyped() {
+		InputConnection inputConnection = getCurrentInputConnection();
 		if (mComposing.length() > 0) {
-			inputConnection.commitText(mComposing, mComposing.length());
+			inputConnection.commitText(mComposing, 1);
 			mComposing.setLength(0);
 			updateCandidates();
 		}
@@ -461,8 +490,7 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 		// think this is the cause of why it got stuck in caps-mode
 		if (attr != null && mInputView != null && mQwertyKeyboard == mInputView.getKeyboard()) {
 			int caps = 0;
-			EditorInfo ei = getCurrentInputEditorInfo();
-			if (ei != null && ei.inputType != EditorInfo.TYPE_NULL) {
+			if (attr.inputType != EditorInfo.TYPE_NULL) {
 				caps = getCurrentInputConnection().getCursorCapsMode(attr.inputType);
 			}
 			mShifted = (caps != 0);
@@ -485,7 +513,7 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 	* Helper to send a key down / key up pair to the current editor.
 	*/
 	private void keyDownUp(int keyEventCode) {
-		Log.d("Keying", "keyDownUp");
+		debug("keyDownUp");
 		getCurrentInputConnection().sendKeyEvent( new KeyEvent(KeyEvent.ACTION_DOWN, keyEventCode));
 		getCurrentInputConnection().sendKeyEvent( new KeyEvent(KeyEvent.ACTION_UP, keyEventCode));
 	}
@@ -494,7 +522,7 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 	* Helper to send a character to the editor as raw key events.
 	*/
 	private void sendKey(int keyCode) {
-		Log.d("Keying", String.format("sendKey %d", keyCode));
+		debug(String.format("sendKey %d", keyCode));
 		switch (keyCode) {
 			case '\n':
 				keyDownUp(KeyEvent.KEYCODE_ENTER);
@@ -541,37 +569,35 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 
 	public void handleBackspace() {
 		final int length = mComposing.length();
-		if (length > 1) {
+		if (length > 0) {
 			mComposing.delete(length - 1, length);
 			getCurrentInputConnection().setComposingText(mComposing, 1);
-			updateCandidates();
-		} else if (length > 0) {
-			mComposing.setLength(0);
-			getCurrentInputConnection().commitText("", 0);
 			updateCandidates();
 		} else {
 			keyDownUp(KeyEvent.KEYCODE_DEL);
 		}
+		// Re-build composing text
 		updateShiftKeyState(getCurrentInputEditorInfo());
 	}
 
 	// pretty certain this logic is failing somewhere ... got stuck in caps mode
 	private void handleShift() {
-		Log.d("Keying", "handleShift");
+		debug("handleShift");
 		if (mInputView == null) {
 			return;
 		}
 
 		Keyboard currentKeyboard = mInputView.getKeyboard();
 		if (mQwertyKeyboard == currentKeyboard) {
-			Log.d("Keying", "handleShift,qwerty");
+			debug("handleShift,qwerty");
 			// Alphabet keyboard
 			checkToggleCapsLock();
 			// Don't defer to InputView setting ... override it. Want to be able to start out first letter lowercase
 			//mInputView.setShifted(mShifted || mInputView.isShifted());
-			mInputView.setShifted(mShifted);
+			// do we need to do the following manually? won't the keypress toggle the state by itself?
+			//mInputView.setShifted(mShifted);
 		} else if (currentKeyboard == mSymbolsKeyboard) {
-			mSymbolsKeyboard.setShifted(true);
+			mSymbolsKeyboard.setShifted(false);
 			mInputView.setKeyboard(mSymbolsShiftedKeyboard);
 			mSymbolsShiftedKeyboard.setShifted(true);
 		} else if (currentKeyboard == mSymbolsShiftedKeyboard) {
@@ -582,7 +608,7 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 	}
 
 	private void handleCharacter(int primaryCode) {
-		Log.d("Keying", String.format("handleCharacter %c", (char)primaryCode));
+		debug(String.format("handleCharacter %c", (char)primaryCode));
 		if (isInputViewShown()) {
 			if (mInputView.isShifted()) {
 				primaryCode = Character.toUpperCase(primaryCode);
@@ -591,6 +617,7 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 		if (isAlphabet(primaryCode) && mPredictionOn) {
 			mComposing.append((char) primaryCode);
 			getCurrentInputConnection().setComposingText(mComposing, 1);
+			// eh?
 			updateShiftKeyState(getCurrentInputEditorInfo());
 			updateCandidates();
 		} else {
@@ -599,18 +626,18 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 	}
 
 	public void handleClose() {
-		commitTyped(getCurrentInputConnection());
+		commitTyped();
 		requestHideSelf(0);
-		mInputView.closing();
+		//mInputView.closing();
 	}
 
 	private void checkToggleCapsLock() {
 		mShifted = !mShifted;
-		Log.d("Keying", "checkToggleCapsLock,toggling");
+		debug("checkToggleCapsLock,toggling");
 		/*
 		long now = System.currentTimeMillis();
 		if (mLastShiftTime + 800 > now) {
-			Log.d("Keying", "checkToggleCapsLock,toggling");
+			debug("checkToggleCapsLock,toggling");
 			mLastShiftTime = 0;
 		} else {
 			mLastShiftTime = now;
@@ -644,7 +671,7 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 			// If we were generating candidate suggestions for the current
 			// text, we would commit one of them here.  But for this sample,
 			// we will just commit the current text.
-			commitTyped(getCurrentInputConnection());
+			commitTyped();
 		}
 	}
 	
@@ -654,7 +681,7 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 	// We're going to ignore these callbacks so we can trigger from onRelease
 	// But this gets called repeatedly for long presses like delete
 	public void onKey(int primaryCode, int[] keyCodes) {
-		Log.d("Keying", String.format("onKey %c %d", (char)primaryCode, primaryCode));
+		debug(String.format("onKey %c %d", (char)primaryCode, primaryCode));
 		if (primaryCode == Keyboard.KEYCODE_DELETE) {
 			handleBackspace();
 
@@ -668,6 +695,7 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 			}
 			mInputView.setKeyboard(current);
 			if (current == mSymbolsKeyboard) {
+				// shouldn't this check the input connection state?
 				current.setShifted(false);
 			}
 		}
@@ -677,7 +705,7 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 		if (isWordSeparator(primaryCode)) {
 			// Handle separator
 			if (mComposing.length() > 0) {
-				commitTyped(getCurrentInputConnection());
+				commitTyped();
 			}
 			sendKey(primaryCode);
 			updateShiftKeyState(getCurrentInputEditorInfo());
@@ -708,21 +736,24 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 
 	}
 
+	// Have never seen this called
 	public void onText(CharSequence text) {
+		debug("onText");
 		InputConnection ic = getCurrentInputConnection();
 		if (ic == null) return;
 		ic.beginBatchEdit();
 		if (mComposing.length() > 0) {
-			commitTyped(ic);
+			commitTyped();
 		}
 		ic.commitText(text, 0);
 		ic.endBatchEdit();
 		updateShiftKeyState(getCurrentInputEditorInfo());
 	}
 
+
 	// Use this to detect long presses ourselves?
 	public void onPress(int primaryCode) {
-		Log.d("Keying", "onPress");
+		debug("onPress");
 
 /*
 		if (primaryCode == Keyboard.KEYCODE_DELETE) {
@@ -746,10 +777,11 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 
 		// We only care about long-presses on certain keys, and long-press is short: 200ms
 		if (isWordSeparator(primaryCode)) {
-			Log.d("Keying", "onRelease,isWordSeparator");
+			// this is dumb ... if cursor is in middle fo the string, this fails
+			debug("onRelease,isWordSeparator");
 			// Handle separator
 			if (mComposing.length() > 0) {
-				commitTyped(getCurrentInputConnection());
+				commitTyped();
 			}
 			sendKey(primaryCode);
 			updateShiftKeyState(getCurrentInputEditorInfo());
@@ -762,10 +794,10 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 			||
 			primaryCode == Keyboard.KEYCODE_MODE_CHANGE
 		) {
-			Log.d("Keying", String.format("onRelease code %d", primaryCode));
+			debug(String.format("onRelease code %d", primaryCode));
 		} else {
 			diff = System.currentTimeMillis() - mKeyDownStart;
-			Log.d("Keying", String.format("onRelease after %d ms", diff));
+			debug(String.format("onRelease after %d ms", diff));
 			if (diff > 200) {
 				// Do re-mappings
 				i = mappings.indexOf(primaryCode);
@@ -783,7 +815,7 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 	
 	@Override
         public void swipeRight() {
-		Log.d("Keying", "swipeRight");
+		debug("swipeRight");
                 if (mCompletionOn) {
                         pickDefaultCandidate();
                 }
@@ -791,13 +823,13 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 
         @Override
         public void swipeLeft() {
-		Log.d("Keying", "swipeLeft");
+		debug("swipeLeft");
                 handleBackspace();
         }
 
         @Override
         public void swipeDown() {
-		Log.d("Keying", "swipeDown");
+		debug("swipeDown");
                 handleClose();
         }
 
@@ -805,4 +837,8 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
         public void swipeUp() {
         }
 
+
+	public void debug(String message) {
+		Log.d("Keying", message);
+	}
 }
