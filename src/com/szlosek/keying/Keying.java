@@ -19,6 +19,9 @@ package com.szlosek.keying;
 import android.inputmethodservice.InputMethodService;
 import android.inputmethodservice.Keyboard;
 import android.inputmethodservice.KeyboardView;
+import android.os.StrictMode;
+import android.os.StrictMode.ThreadPolicy;
+import android.os.StrictMode.ThreadPolicy.Builder;
 import android.text.method.MetaKeyKeyListener;
 import android.util.Log;
 import android.view.KeyCharacterMap;
@@ -74,7 +77,7 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 	private LatinKeyboard mCurKeyboard;
 
 	private String mWordSeparators;
-    
+	
 	/**
 	* Main initialization of the input method component.  Be sure to call
 	* to super class.
@@ -83,6 +86,7 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 	public void onCreate() {
 		super.onCreate();
 		debug("onCreate");
+
 		mWordSeparators = getResources().getString(R.string.word_separators);
 	}
 
@@ -127,9 +131,13 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 	@Override
 	public View onCreateCandidatesView() {
 		debug("onCreateCandidatesView");
+		mCandidateView = null;
+		return null;
+		/*
 		mCandidateView = new CandidateView(this);
 		mCandidateView.setService(this);
 		return mCandidateView;
+		*/
 	}
 	
 	@Override
@@ -237,7 +245,7 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 		debug("onStartInputView");
 		// Apply the selected keyboard to the input view.
 		mInputView.setKeyboard(mCurKeyboard);
-		//mInputView.closing();
+		mInputView.closing();
 		
 		// Reset composing buffer
 		mComposing.setLength(0);
@@ -278,7 +286,12 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 	*/
 	@Override
 	public void onDisplayCompletions(CompletionInfo[] completions) {
-		debug("onDisplayCompletions");
+		if (completions != null) {
+			debug(String.format("onDisplayCompletions: %d items", completions.length));
+		} else {
+			debug("onDisplayCompletions");
+		}
+		/*
 		if (mCompletionOn) {
 			mCompletions = completions;
 			if (completions == null) {
@@ -295,6 +308,7 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 			}
 			setSuggestions(stringList, true, true);
 		}
+		*/
 	}
 	
 		/**
@@ -320,11 +334,9 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 
 		mCurKeyboard = mQwertyKeyboard;
 		// necessary?
-		/*
 		if (mInputView != null) {
 			mInputView.closing();
 		}
-		*/
 	}
 	
 	@Override
@@ -545,6 +557,7 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 	* candidates.
 	*/
 	private void updateCandidates() {
+		/*
 		if (!mCompletionOn) {
 			if (mComposing.length() > 0) {
 				ArrayList<String> list = new ArrayList<String>();
@@ -554,6 +567,7 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 				setSuggestions(null, false, false);
 			}
 		}
+		*/
 	}
 
 	public void setSuggestions(List<String> suggestions, boolean completions, boolean typedWordValid) {
@@ -628,7 +642,7 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 	public void handleClose() {
 		commitTyped();
 		requestHideSelf(0);
-		//mInputView.closing();
+		mInputView.closing();
 	}
 
 	private void checkToggleCapsLock() {
