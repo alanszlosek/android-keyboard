@@ -78,6 +78,7 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 
 	private String mWordSeparators;
 	
+	// IN THE ORDER I'VE SEEN THEM CALLED
 	/**
 	* Main initialization of the input method component.  Be sure to call
 	* to super class.
@@ -100,51 +101,13 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 		mSymbolsKeyboard = new LatinKeyboard(this, R.xml.symbols);
 		mSymbolsShiftedKeyboard = new LatinKeyboard(this, R.xml.symbols_shift);
 	}
-
-/*
-	// Return true to use our own input box
-	@Override
-	public boolean onEvaluateInputViewShown() {
-		return false; //true;
-	}
-*/
-
-	/**
-	* Called by the framework when your view for creating input needs to
-	* be generated.  This will be called the first time your input method
-	* is displayed, and every time it needs to be re-created such as due to
-	* a configuration change.
-	*/
-	@Override
-	public View onCreateInputView() {
-		debug("onCreateInputView");
-		mInputView = (KeyboardView) getLayoutInflater().inflate(R.layout.input, null);
-		mInputView.setOnKeyboardActionListener(this);
-		mInputView.setKeyboard(mQwertyKeyboard);
-		return mInputView;
-	}
-
-	/**
-	* Called by the framework when your view for showing candidates needs to
-	* be generated, like {@link #onCreateInputView}.
-	*/
-	@Override
-	public View onCreateCandidatesView() {
-		debug("onCreateCandidatesView");
-		mCandidateView = null;
-		return null;
-		/*
-		mCandidateView = new CandidateView(this);
-		mCandidateView.setService(this);
-		return mCandidateView;
-		*/
-	}
 	
 	@Override
 	public void onBindInput() {
 		debug("onBindInput");
+		// Upon this call you know that getCurrentInputBinding() and getCurrentInputConnection() return valid objects.
 	}
-
+	
 	/**
 	* This is the main point where we do our initialization of the input method
 	* to begin operating on an application.  At this point we have been
@@ -239,13 +202,44 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 		mCurKeyboard.setImeOptions(getResources(), attribute.imeOptions);
 	}
 
+	/**
+	* Called by the framework when your view for creating input needs to
+	* be generated.  This will be called the first time your input method
+	* is displayed, and every time it needs to be re-created such as due to
+	* a configuration change.
+	*/
+	@Override
+	public View onCreateInputView() {
+		debug("onCreateInputView");
+		mInputView = (KeyboardView) getLayoutInflater().inflate(R.layout.input, null);
+		mInputView.setOnKeyboardActionListener(this);
+		mInputView.setKeyboard(mCurKeyboard);
+		return mInputView;
+	}
+
+	/**
+	* Called by the framework when your view for showing candidates needs to
+	* be generated, like {@link #onCreateInputView}.
+	*/
+	@Override
+	public View onCreateCandidatesView() {
+		debug("onCreateCandidatesView");
+		mCandidateView = null;
+		return null;
+		/*
+		mCandidateView = new CandidateView(this);
+		mCandidateView.setService(this);
+		return mCandidateView;
+		*/
+	}
+
 	@Override
 	public void onStartInputView(EditorInfo attribute, boolean restarting) {
 		super.onStartInputView(attribute, restarting);
 		debug("onStartInputView");
 		// Apply the selected keyboard to the input view.
-		mInputView.setKeyboard(mCurKeyboard);
-		mInputView.closing();
+		//mInputView.setKeyboard(mCurKeyboard);
+		//mInputView.closing(); //?
 		
 		// Reset composing buffer
 		mComposing.setLength(0);
@@ -348,6 +342,7 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 	@Override
 	public void onUnbindInput() {
 		debug("onUnbindInput");
+		// After returning getCurrentInputBinding() and getCurrentInputConnection() will no longer return valid objects.
 	}
 	
 	@Override
@@ -692,6 +687,25 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 	// OnKeyboardActionListener callbacks
 
 
+	// Use this to detect long presses ourselves?
+	public void onPress(int primaryCode) {
+		debug("onPress");
+
+/*
+		if (primaryCode == Keyboard.KEYCODE_DELETE) {
+			handleBackspace();
+		} else 
+*/
+		if (primaryCode == Keyboard.KEYCODE_SHIFT) {
+			handleShift();
+		} else if (primaryCode == Keyboard.KEYCODE_CANCEL) {
+			handleClose();
+		} else {
+			// Determine if we care about this key
+			mKeyDownStart = System.currentTimeMillis();
+		}
+	}
+
 	// We're going to ignore these callbacks so we can trigger from onRelease
 	// But this gets called repeatedly for long presses like delete
 	public void onKey(int primaryCode, int[] keyCodes) {
@@ -747,44 +761,8 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 			handleCharacter(primaryCode, keyCodes);
 		}
 */
-
 	}
-
-	// Have never seen this called
-	public void onText(CharSequence text) {
-		debug("onText");
-		InputConnection ic = getCurrentInputConnection();
-		if (ic == null) return;
-		ic.beginBatchEdit();
-		if (mComposing.length() > 0) {
-			commitTyped();
-		}
-		ic.commitText(text, 0);
-		ic.endBatchEdit();
-		updateShiftKeyState(getCurrentInputEditorInfo());
-	}
-
-
-	// Use this to detect long presses ourselves?
-	public void onPress(int primaryCode) {
-		debug("onPress");
-
-/*
-		if (primaryCode == Keyboard.KEYCODE_DELETE) {
-			handleBackspace();
-		} else 
-*/
-		if (primaryCode == Keyboard.KEYCODE_SHIFT) {
-			handleShift();
-		} else if (primaryCode == Keyboard.KEYCODE_CANCEL) {
-			handleClose();
-		} else {
-			// Determine if we care about this key
-			mKeyDownStart = System.currentTimeMillis();
-		}
-
-	}
-
+	
 	public void onRelease(int primaryCode) {
 		long diff;
 		int i;
@@ -826,6 +804,21 @@ public class Keying extends InputMethodService implements KeyboardView.OnKeyboar
 		}
 	}
 	
+
+	// Have never seen this called
+	public void onText(CharSequence text) {
+		debug("onText");
+		InputConnection ic = getCurrentInputConnection();
+		if (ic == null) return;
+		ic.beginBatchEdit();
+		if (mComposing.length() > 0) {
+			commitTyped();
+		}
+		ic.commitText(text, 0);
+		ic.endBatchEdit();
+		updateShiftKeyState(getCurrentInputEditorInfo());
+	}
+
 	
 	@Override
         public void swipeRight() {
