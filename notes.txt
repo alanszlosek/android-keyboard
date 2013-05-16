@@ -1,3 +1,16 @@
+The order methods are triggered:
+
+D/Keying  ( 1281): onCreate
+D/Keying  ( 1281): onInitializeInterface
+D/Keying  ( 1281): onBindInput
+D/Keying  ( 1281): onStartInput
+D/Keying  ( 1281): onCreateInputView
+D/Keying  ( 1281): onCreateCandidatesView
+D/Keying  ( 1281): onStartInputView
+D/Keying  ( 1281): onPress
+D/Keying  ( 1281): onKey h 104
+D/Keying  ( 1281): onRelease after 100 ms
+
 Functions related to key input ... trying to make sense of it all
 
 translateKeyDown
